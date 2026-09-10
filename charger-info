@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+read_value() {
+  if [[ -r "$1" ]]; then
+    tr -d '\n' < "$1"
+  else
+    printf '%s' "${2:-0}"
+  fi
+}
+
+battery=/sys/class/power_supply/BAT0
+ac=/sys/class/power_supply/AC0
+profile_file=/sys/devices/platform/tuxedo_keyboard/charging_profile/charging_profile
+usb=""
+
+for candidate in /sys/class/power_supply/ucsi-source-psy-*; do
+  if [[ -r "$candidate/online" ]] && [[ "$(read_value "$candidate/online")" == 1 ]]; then
+    usb="$candidate"
+    break
+  fi
+done
+
+status="$(read_value "$battery/status" Unknown)"
+capacity="$(read_value "$battery/capacity")"
+voltage="$(read_value "$battery/voltage_now")"
+current="$(read_value "$battery/current_now")"
+ac_online="$(read_value "$ac/online")"
+charging_profile="$(read_value "$profile_file" unsupported)"
+battery_watts="$(
+  awk -v voltage="$voltage" -v current="$current" -v status="$status" 'BEGIN {
+    watts = voltage * current / 1000000000000
+    if (status == "Discharging") watts = -watts
+    if (status != "Charging" && status != "Discharging") watts = 0
+    printf "%.1f", watts
+  }'
+)"
+
+if [[ -n "$usb" ]]; then
+  pd="$(read_value "$usb/online")"
+  pd_voltage="$(read_value "$usb/voltage_now")"
+  pd_current="$(read_value "$usb/current_now")"
+  pd_current_max="$(read_value "$usb/current_max")"
+  usb_type="$(read_value "$usb/usb_type" USB-C)"
+else
+  pd=0
+  pd_voltage=0
+  pd_current=0
+  pd_current_max=0
+  usb_type=Disconnected
+fi
+
+awk -v pd="$pd" -v ac="$ac_online" -v status="$status" \
+  -v capacity="$capacity" -v battery_watts="$battery_watts" \
+  -v voltage="$pd_voltage" -v current="$pd_current" \
+  -v current_max="$pd_current_max" -v usb_type="$usb_type" \
+  -v profile="$charging_profile" 'BEGIN {
+    printf "%s\t%s\t%s\t%s\t%.1f\t%.1f\t%.2f\t%.2f\t%.1f\t%s\t%s\n", \
+      pd, ac, status, capacity, battery_watts, voltage / 1000000, \
+      current / 1000000, current_max / 1000000, \
+      voltage * current_max / 1000000000000, usb_type, profile
+  }'

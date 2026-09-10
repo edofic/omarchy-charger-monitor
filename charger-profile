@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+profile_dir=/sys/devices/platform/tuxedo_keyboard/charging_profile
+profile_file="$profile_dir/charging_profile"
+available_file="$profile_dir/charging_profiles_available"
+
+[[ -r "$profile_file" && -r "$available_file" ]] || {
+  printf 'Charging profiles are not supported by this machine\n' >&2
+  exit 1
+}
+
+if [[ ${1:-status} == status ]]; then
+  cat "$profile_file"
+  exit 0
+fi
+
+[[ ${1:-} == set && $# == 2 ]] || {
+  printf 'Usage: charger-profile [status|set PROFILE]\n' >&2
+  exit 2
+}
+
+requested=$2
+available="$(< "$available_file")"
+case " $available " in
+  *" $requested "*) ;;
+  *)
+    printf 'Unsupported charging profile: %s\n' "$requested" >&2
+    exit 2
+    ;;
+esac
+
+[[ $EUID -eq 0 ]] || {
+  printf 'Changing the charging profile requires administrator authorization\n' >&2
+  exit 1
+}
+
+printf '%s' "$requested" > "$profile_file"
+actual="$(< "$profile_file")"
+[[ $actual == "$requested" ]] || {
+  printf 'Firmware kept charging profile %s instead of %s\n' "$actual" "$requested" >&2
+  exit 1
+}
+
+printf '%s\n' "$actual"

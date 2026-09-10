@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "edofic.charger-monitor",
+  "name": "Charger Monitor",
+  "version": "1.0.0",
+  "author": "Andraz Bajt",
+  "description": "USB-C Power Delivery contract and live battery power flow",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Charger Monitor",
+    "description": "USB-C PD contract and live battery power flow",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
