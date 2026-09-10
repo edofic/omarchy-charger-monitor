@@ -3,6 +3,8 @@
 An Omarchy bar widget for live battery power flow, USB-C Power Delivery
 contracts, and TUXEDO charging-profile management.
 
+![Charger Monitor panel](screenshot.png)
+
 ## Features
 
 - Live net battery charge or discharge power
