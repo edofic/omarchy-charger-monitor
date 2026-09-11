@@ -36,6 +36,11 @@ authorization prompt.
 TUXEDO firmware rescales the selected physical capacity to 100% in Linux, so
 the displayed percentage can still reach 100% under Reduced or Stationary use.
 
+Some TUXEDO models or firmware versions accept a profile write and immediately
+restore Full capacity. The widget verifies the settled value and reports that
+rejection instead of displaying the requested profile as active. This behavior
+is controlled by the laptop firmware and `tuxedo_keyboard` driver.
+
 ## Remove
 
 ```sh

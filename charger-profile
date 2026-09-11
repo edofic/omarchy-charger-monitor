@@ -37,9 +37,13 @@ esac
 }
 
 printf '%s' "$requested" > "$profile_file"
+
+# The sysfs write can succeed before the embedded controller restores its own
+# value. Wait for that asynchronous update before reporting success.
+sleep 0.5
 actual="$(< "$profile_file")"
 [[ $actual == "$requested" ]] || {
-  printf 'Firmware kept charging profile %s instead of %s\n' "$actual" "$requested" >&2
+  printf 'The TUXEDO firmware reverted the charging profile to %s; %s is not sticking on this machine\n' "$actual" "$requested" >&2
   exit 1
 }
 
