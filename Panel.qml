@@ -53,8 +53,8 @@ Panel {
     if (profileProc.running || chargingProfile === "unsupported") return
     profileError = ""
     profileProc.command = [
-      "pkexec",
-      (Quickshell.env("HOME") || "") + "/.config/omarchy/plugins/edofic.charger-monitor/charger-profile",
+      "/usr/bin/pkexec",
+      "/usr/local/libexec/omarchy-charger-monitor/charger-profile",
       "set",
       profile
     ]

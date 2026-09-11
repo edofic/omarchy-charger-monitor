@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 set -euo pipefail
 
@@ -12,7 +12,7 @@ available_file="$profile_dir/charging_profiles_available"
 }
 
 if [[ ${1:-status} == status ]]; then
-  cat "$profile_file"
+  /usr/bin/cat "$profile_file"
   exit 0
 fi
 
@@ -22,6 +22,14 @@ fi
 }
 
 requested=$2
+case "$requested" in
+  high_capacity|balanced|stationary) ;;
+  *)
+    printf 'Unsupported charging profile: %s\n' "$requested" >&2
+    exit 2
+    ;;
+esac
+
 available="$(< "$available_file")"
 case " $available " in
   *" $requested "*) ;;
@@ -40,7 +48,7 @@ printf '%s' "$requested" > "$profile_file"
 
 # The sysfs write can succeed before the embedded controller restores its own
 # value. Wait for that asynchronous update before reporting success.
-sleep 0.5
+/usr/bin/sleep 0.5
 actual="$(< "$profile_file")"
 [[ $actual == "$requested" ]] || {
   printf 'The TUXEDO firmware reverted the charging profile to %s; %s is not sticking on this machine\n' "$actual" "$requested" >&2

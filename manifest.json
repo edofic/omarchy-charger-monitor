@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "edofic.charger-monitor",
   "name": "Charger Monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Andraz Bajt",
   "description": "USB-C Power Delivery contract and live battery power flow",
   "kinds": [
